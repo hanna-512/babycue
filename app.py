@@ -14,9 +14,11 @@ import io
 import os
 import random
 import subprocess
+import tarfile
 import tempfile
 import time
 import urllib.parse
+import urllib.request
 import wave
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -29,20 +31,13 @@ import pandas as pd
 import streamlit as st
 import tensorflow as tf
 
-if hasattr(tf, "__internal__") and not hasattr(tf.__internal__, "register_load_context_function"):
-    tf.__internal__.register_load_context_function = getattr(
-        tf.__internal__, "register_call_context_function", lambda func: None
-    )
-
-import tensorflow_hub as hub
-
 # ---------------------------------------------------------------------------
-# Paths & Core AI Configuration (Preserved)
+# Paths & Core AI Configuration
 # ---------------------------------------------------------------------------
 BASE = Path(__file__).resolve().parent
 MODEL_PATH = BASE / "models" / "best_model.pkl"
 TELEMETRY_PATH = BASE / "logs" / "tester_feedback.csv"
-YAMNET_URL = "https://tfhub.dev/google/yamnet/1"
+YAMNET_ARCHIVE_URL = "https://tfhub.dev/google/yamnet/1?tf-hub-format=compressed"
 TARGET_SR = 16000
 MAX_FILE_MB = 10
 FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
@@ -362,7 +357,6 @@ html, body, .stApp {{
     padding-bottom: 3.5rem;
 }}
 
-/* Keep top header transparent BUT ensure the collapsed-sidebar reopen button (>>) stays visible! */
 header[data-testid="stHeader"] {{
     background: transparent !important;
 }}
@@ -393,7 +387,7 @@ section[data-testid="stSidebar"] .block-container {{
     padding-right: 1.05rem;
 }}
 
-/* Sidebar Navigation Buttons with Guaranteed Base64 Lucide SVG Icons */
+/* Sidebar Navigation Buttons with Base64 Lucide SVG Icons */
 section[data-testid="stSidebar"] div[data-testid="stButton"] button {{
     width: 100% !important;
     justify-content: flex-start !important;
@@ -437,7 +431,6 @@ section[data-testid="stSidebar"] div[data-testid="stButton"] button p::before {{
     background-position: center;
     flex-shrink: 0;
 }}
-/* Map each sidebar navigation button (1..6) to its distinct Lucide SVG icon */
 section[data-testid="stSidebar"] div.stElementContainer:has(button):nth-of-type(2) button p::before {{
     background-image: url("{ICON_HOME_B64}");
 }}
@@ -662,14 +655,28 @@ div[data-testid="stProgress"] > div > div > div > div {{
 
 
 # ---------------------------------------------------------------------------
-# Backend AI Pipeline & Utilities (Preserved 100%)
+# Backend AI Pipeline & Utilities (Loads YAMNet directly via tf.saved_model)
 # ---------------------------------------------------------------------------
 @st.cache_resource
 def load_ai_pipeline():
     if not MODEL_PATH.exists():
         return None, None
     classifier = joblib.load(MODEL_PATH)
-    yamnet = hub.load(YAMNET_URL)
+
+    yamnet_cache = Path(tempfile.gettempdir()) / "babycue_yamnet_savedmodel"
+    found_pb = list(yamnet_cache.rglob("saved_model.pb")) if yamnet_cache.exists() else []
+
+    if not found_pb:
+        yamnet_cache.mkdir(parents=True, exist_ok=True)
+        tgz_path = yamnet_cache / "yamnet.tar.gz"
+        urllib.request.urlretrieve(YAMNET_ARCHIVE_URL, str(tgz_path))
+        with tarfile.open(tgz_path, "r:gz") as tar:
+            tar.extractall(path=str(yamnet_cache))
+        if tgz_path.exists():
+            tgz_path.unlink()
+        found_pb = list(yamnet_cache.rglob("saved_model.pb"))
+
+    yamnet = tf.saved_model.load(str(found_pb[0].parent))
     return classifier, yamnet
 
 
@@ -999,7 +1006,7 @@ with st.sidebar:
 
 
 # ---------------------------------------------------------------------------
-# Top Utility Bar with Interactive Baby Profile Popover (Optional Name + Bday + 4 Categories)
+# Top Utility Bar with Interactive Baby Profile Popover
 # ---------------------------------------------------------------------------
 top_l, top_r = st.columns([2.8, 1.7], vertical_alignment="center")
 with top_l:
@@ -1087,7 +1094,7 @@ if st.session_state["nav"] == "Home":
     render_html("<div style='height:8px;'></div>")
 
     if model is None or yamnet_model is None:
-        st.error("Trained model artifact not found at 'models/best_model.pkl'. Please run 'python src/train_model.py' first.")
+        st.error("Trained model artifact not found at 'models/best_model.pkl'. Please ensure models/best_model.pkl is uploaded.")
         st.stop()
 
     main_left, main_right = st.columns([1.65, 1.15], gap="large")
@@ -1972,4 +1979,3 @@ else:
             st.session_state["baby_name"] = ""
             st.session_state["baby_bday"] = None
             st.success("All session history and profile fields have been cleared.")
-            
