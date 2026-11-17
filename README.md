@@ -17,8 +17,9 @@
 - `models/best_model.pkl` — Trained PCA + Logistic Regression classification pipeline.
 - `requirements.txt` — Python package dependencies for cloud and local deployment.
 - `.streamlit/config.toml` — Custom light-mode color theme configuration.
-
+- `src/` — Source code for audio preprocessing, MD5 deduplication, YAMNet feature extraction, and 5-fold cross-validation.
 ## Run Locally
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
+> **Note:** Raw infant cry audio datasets (`data/`) are omitted from this repository due to file size limits and data privacy. The pre-trained classifier artifact (`models/best_model.pkl`) is included so the web application runs out of the box.
