@@ -27,6 +27,13 @@ import librosa
 import numpy as np
 import pandas as pd
 import streamlit as st
+import tensorflow as tf
+
+if hasattr(tf, "__internal__") and not hasattr(tf.__internal__, "register_load_context_function"):
+    tf.__internal__.register_load_context_function = getattr(
+        tf.__internal__, "register_call_context_function", lambda func: None
+    )
+
 import tensorflow_hub as hub
 
 # ---------------------------------------------------------------------------
