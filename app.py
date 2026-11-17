@@ -346,9 +346,32 @@ st.markdown(
 }}
 
 html, body, .stApp {{
+    color-scheme: light !important;
     background-color: var(--bg-ivory) !important;
     color: var(--charcoal) !important;
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}}
+
+/* Force Light Surfaces on All Native Inputs, Dropdowns, Popovers & Labels (Overrides Mobile Dark Mode) */
+label, label p, .stSelectbox label p, .stTextInput label p, .stDateInput label p, .stAudioInput label p, .stFileUploader label p {{
+    color: var(--charcoal) !important;
+    font-weight: 600 !important;
+}}
+div[data-baseweb="select"] > div,
+div[data-baseweb="input"] > div,
+[data-testid="stPopover"] button,
+[data-testid="stPopoverButton"] {{
+    background-color: var(--white) !important;
+    color: var(--charcoal) !important;
+    border: 1px solid var(--border-soft) !important;
+}}
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] svg,
+[data-testid="stPopover"] button p,
+[data-testid="stPopover"] button span,
+[data-testid="stPopover"] button svg {{
+    color: var(--charcoal) !important;
+    fill: var(--charcoal) !important;
 }}
 
 .block-container {{
@@ -359,6 +382,26 @@ html, body, .stApp {{
 
 header[data-testid="stHeader"] {{
     background: transparent !important;
+}}
+[data-testid="stExpandSidebarButton"],
+[data-testid="collapsedControl"] {{
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: var(--blush-soft) !important;
+    border: 1px solid var(--blush) !important;
+    border-radius: 12px !important;
+    color: var(--mauve) !important;
+}}
+[data-testid="stExpandSidebarButton"] svg,
+[data-testid="collapsedControl"] svg {{
+    color: var(--mauve) !important;
+    fill: var(--mauve) !important;
+}}
+
+@media (max-width: 768px) {{
+    .block-container {{
+        padding-top: 3.1rem !important;
+    }}
 }}
 [data-testid="stExpandSidebarButton"],
 [data-testid="collapsedControl"] {{
