@@ -1,0 +1,33 @@
+{
+  "model": "Random Forest",
+  "dataset": "CrySense cleaned_candidate",
+  "total_recordings": 479,
+  "training_recordings": 384,
+  "testing_recordings": 95,
+  "features": [
+    "mfcc_1",
+    "mfcc_2",
+    "mfcc_3",
+    "mfcc_4",
+    "mfcc_5",
+    "mfcc_6",
+    "mfcc_7",
+    "mfcc_8",
+    "mfcc_9",
+    "mfcc_10",
+    "mfcc_11",
+    "mfcc_12",
+    "mfcc_13",
+    "pitch_f0",
+    "energy"
+  ],
+  "classes": [
+    "Hunger",
+    "Pain_Discomfort",
+    "Sleepiness"
+  ],
+  "cv_macro_f1": 0.29510837537523144,
+  "cv_std": 0.0019114698285810415,
+  "test_accuracy": 0.8,
+  "test_macro_f1": 0.2962962962962963
+}
